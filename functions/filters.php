@@ -8,9 +8,10 @@ function bb_happenings( $content ) {
 		$this_post_time = get_the_time('Y-m-d', get_the_ID());
 		$birthdate = date('Y-m-d', strtotime(get_option('bb_birthday')));
 		$age = dateDiff($this_post_time, $birthdate);
+		$child = 'Liam';
 		$newcontent = $content; // starting to build the content variable with whatever content is in the wysiwyg. 
-		$newcontent .= '<p class="age">At the time of this writing, you were '.$age.' old.</p>';
-/*			if (is_single()) {
+		$newcontent .= '<p class="age">At the time of this writing, '. $child.' was '.$age.' old.</p>';
+			if (is_single()) {
 				$milestone = get_post_meta(get_the_id(),'milestone',true);
 				$firsts = get_post_meta(get_the_id(),'firsts',true);
 				$challenge = get_post_meta(get_the_id(),'challenge',true);
@@ -44,7 +45,6 @@ function bb_happenings( $content ) {
 
 		    // Returns the content.
 		} // end check for single
-	*/	
 		return $newcontent;
 	} else {
 		return $newcontent;

@@ -15,6 +15,7 @@ include 'functions/widgets.php';
 include 'functions/bb_functions.php';
 include 'functions/filters.php';
 include 'functions/shortcodes.php';
+include 'functions/bb_meta.php';
 $interface = "Babybook";  
 add_action('admin_menu', 'add_welcome_interface');
 add_action('admin_init', 'imprint_head');
