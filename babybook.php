@@ -50,7 +50,7 @@ $settings = get_option('bb-settings');
 	add_settings_field( 'bb_photos', 'Photos Category', 'bb_cat_dropdown', 'babyblog', 'section-two', array(
 	    'name' => 'bb-settings[bb_photos]',
 	    'value' => $settings['bb_photos'],
-		'help' => ' <small>(MM/DD/YYYY)</small>',
+		'help' => ' <small>(This category will be used to pull in the photos if you use the widget)</small>',
 		'title' => 'Photos'
 	) );
 	
