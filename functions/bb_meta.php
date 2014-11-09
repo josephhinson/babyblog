@@ -96,14 +96,19 @@ function bb_save_postdata( $post_id ) {
   }
 
   // OK, we're authenticated: we need to find and save the data
-
   	$firsts = $_POST['firsts'];
     $milestone  = $_POST['milestone'];
     $challenge = $_POST['challenge']; 
 
   // update the data
-		update_post_meta($post_id, 'firsts', $firsts);
+  if (!empty($firsts)) {
+	update_post_meta($post_id, 'firsts', $firsts);
+  }
+  if (!empty($milestone)) {
     update_post_meta($post_id, 'milestone', $milestone);
+  }
+  if (!empty($challenge)) {
     update_post_meta($post_id, 'challenge', $challenge);
+  }
 }
 ?>

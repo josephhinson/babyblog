@@ -35,19 +35,8 @@ class BB_Milestones extends WP_Widget {
 		/* Display name from widget settings if one was input. */
 		
 		// Settings from the widget
-		?>
-				<ul>
-				<?php query_posts('meta_key=milestone&showposts=3'); ?>
-				<?php if (have_posts()) : while (have_posts()) : the_post(); ?>
-					<?php 
-					$milestone = get_post_meta($post->ID,'milestone',true);
-					?>
-					<li><a href="<?php the_permalink() ?>" title="Link to <?php the_title(); ?>"><?php the_time('F j, Y'); ?></a> <br/>
-					<?php echo $milestone; ?></li>
-				<?php endwhile; endif; wp_reset_query(); ?>
-				</ul>
-				<span class="seeall"><a href="<?php bloginfo('url'); ?>/milestones">See All Milestones</a></span>
-		<?
+		
+		get_meta_posts('milestone', '10');
 		
 		/* After widget (defined by themes). */
 		echo $after_widget;
@@ -104,19 +93,7 @@ class BB_Firsts extends WP_Widget {
 		
 		// Settings from the widget
 		// @NEEDFIX -- make the number customizable, as well as the title and link to see all posts.
-		?>
-				<ul>
-					<?php query_posts('meta_key=firsts&showposts=10'); ?>
-					<?php if (have_posts()) : while (have_posts()) : the_post(); ?>
-						<?php 
-						$firsts = get_post_meta($post->ID,'firsts',true);
-						?>
-						<li><a href="<?php the_permalink() ?>" title="Link to <?php the_title(); ?>"><?php the_time('F j, Y'); ?></a> <br/>
-						<?php echo $firsts ?></li>
-					<?php endwhile; endif; wp_reset_query(); ?>
-				</ul>
-				<span class="seeall"><a href="<?php bloginfo('url'); ?>/firsts">See All Firsts</a></span>
-<?
+		get_meta_posts('firsts', '10');
 		
 		/* After widget (defined by themes). */
 		echo $after_widget;
@@ -169,14 +146,16 @@ class BB_Photos extends WP_Widget {
 		echo $before_widget;
 		echo '<h3 class="widgettitle">Photos</h3>';
 		/* Display name from widget settings if one was input. */
-		
-		// Settings from the widget
-		// @NEEDFIX -- change 'cat=4' to whatever category users select for the photos category - also possibly change thumbnail
-		?>
-				<?php 
-//				$photocat = get_option('bb_photo_category');
-				query_posts('cat=4&posts_per_page=3'); ?>
-				<?php if (have_posts()) : ?>
+
+				$bboptions = get_option('bb-settings');
+				$photocat = $bboptions['bb_photos'];
+				$photoargs = array(
+					'cat' => $photocat,
+					'posts_per_page' => '12'
+				);
+					$pPosts = get_posts($photoargs);
+
+					if (!empty($pPosts)) : ?>
 					<style type="text/css" media="screen">
 						.sb_photos {
 							min-width: 190px;
@@ -196,27 +175,28 @@ class BB_Photos extends WP_Widget {
 						}
 					</style>
 					<ul class="sb_photos">
-						<?php while (have_posts()) : the_post(); ?>
-						<?php // Begin Photo Thumbnails
-							$sb_photos = get_children( 'numberposts=3&post_type=attachment&post_mime_type=image&post_parent='.$post->ID );
+						<?php foreach ($pPosts as $pPost):
+							
+							// Begin Photo Thumbnails
+							$sb_photos = get_children( 'numberposts=3&post_type=attachment&post_mime_type=image&post_parent='.$pPost->ID );
 							if (!empty($sb_photos)) : ?>
-
 							<?php foreach($sb_photos as $sb_photo) : ?>
 							<li>
-								<a href="<?php the_permalink() ?>" title="Link to <?php the_title(); ?>"><?php echo wp_get_attachment_image($sb_photo->ID, array(50,50)); ?></a>
+								<a href="<?php echo get_permalink($pPost->ID); ?>" title="Link to <?php echo get_the_title($pPost->ID); ?>">
+									<?php echo wp_get_attachment_image($sb_photo->ID, array(50,50)); ?>
+								</a>
 							</li>
-
-		 				<?php endforeach; ?>
-						<?php endif; // END Photo thumbnails ?>
-
-					<?php endwhile; ?>
+							<?php
+							endforeach; 
+						endif; // END Photo thumbnails ?>
+					<?php endforeach ?>
 						<li style="clear:both;float:none;"></li><!--clearfix li-->
-				<?php endif; wp_reset_query();// end loop ?>
+				<?php endif; // end check and loop ?>
 				
-				<li class="seeall"><a href="<?php bloginfo('url'); ?>/category/photos/">See All Photos</a></li>
+				<li class="seeall"><a href="<?php echo get_category_link($photocat); ?>">See All Photos</a></li>
 				<li style="clear:both;float:none;"></li>
 				</ul>
-		<?
+		<?php
 		
 		/* After widget (defined by themes). */
 		echo $after_widget;
@@ -234,4 +214,82 @@ class BB_Photos extends WP_Widget {
 	<?php
 	}
 } // END BB_Photos
-?>
+
+// This is a widget for Babybook Baby Age
+
+// initializes the widget on WordPress Load
+add_action('widgets_init', 'bb_baby_age_init_widget');
+
+// Should be called above from "add_action"
+function bb_baby_age_init_widget() {
+	register_widget( 'BB_Baby_Age' );
+}
+
+// new class to extend WP_Widget function
+class BB_Baby_Age extends WP_Widget {
+	/** Widget setup.  */
+	function BB_Baby_Age() {
+		/* Widget settings. */
+		$widget_ops = array(
+			'classname' => 'bb_baby_age_widget',
+			'description' => __('Babybook Baby Age', 'bb_baby_age_widget') );
+
+		/* Widget control settings. */
+		$control_ops = array( 'width' => 300, 'height' => 350, 'id_base' => 'bb_baby_age_widget' );
+
+		/* Create the widget. */
+		$this->WP_Widget( 'bb_baby_age_widget', __('Babybook Baby Age Widget', 'Options'), $widget_ops, $control_ops );
+	}
+	/**
+	* How to display the widget on the screen. */
+	function widget( $args, $instance ) {
+		extract( $args );
+		$title = apply_filters('widget_title', $instance['title'] );
+
+		/* Before widget (defined by themes). */
+		echo $before_widget;
+		if ( $title )
+			echo $before_title . $title . $after_title;
+		
+		/* Display name from widget settings if one was input. */
+		
+		// Settings from the widget
+		$bbsettings = get_option('bb-settings');
+		$birthdate = date('Y-m-d', strtotime($bbsettings['bb_birthday']));
+		$child = $bbsettings['bb_name'];		
+		$today = strtotime('today');
+		$today = date('Y-m-d', $today);
+		$age = dateDiff($today, $birthdate);
+		echo '<p class="age">'. $child.' is '.$age.' old today!</p>';
+		/* After widget (defined by themes). */
+		echo $after_widget;
+	}
+
+	/**
+	 * Update the widget settings.
+	 */
+	function update( $new_instance, $old_instance ) {
+		$instance = $old_instance;
+
+		/* Strip tags for title and name to remove HTML (important for text inputs). */
+		$instance['title'] = strip_tags( $new_instance['title'] );
+
+		return $instance;
+	}
+	
+/**
+ * Displays the widget settings controls on the widget panel.
+ * Make use of the get_field_id() and get_field_name() function
+ * when creating your form elements. This handles the confusing stuff.
+*/
+function form($instance) {
+	$defaults = array( 'title' => __('Baby\'s Age', 'bb_baby_age_widget'));
+	$instance = wp_parse_args( (array) $instance, $defaults ); ?>
+	<!-- Widget Title: Text Input -->
+	<p>
+		<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title:', 'bb_baby_age_widget'); ?></label><br>
+		<input type="text" class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo $instance['title']; ?>">
+	</p>
+	<?php
+	}
+} // END BB_Baby_Age

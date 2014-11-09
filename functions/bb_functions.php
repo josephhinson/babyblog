@@ -1,4 +1,4 @@
-<?
+<?php
 // This code removes "Protected and Private" from titles for prettier viewing when logged in as an admin.
 function the_title_trim($title)
 {
@@ -156,4 +156,24 @@ function dateDiff($time1, $time2, $precision = 3) {
   return implode(", ", $times);
 }
 
-?>
+// displays all milestones
+function get_meta_posts($metakey, $num) { ?>
+	<ul>
+		<?php 
+		$key = array(
+			'meta_key' => $metakey,
+			'posts_per_page' => $num,
+		); 
+		$theposts = get_posts($key);
+		foreach ($theposts as $thepost) {
+			$metacontent = get_post_meta($thepost->ID, $metakey, true);?>
+			<?php if (!empty($metacontent)) : ?>
+				<li><a href="<?php echo get_permalink($thepost->ID); ?>" title="Link to <?php echo get_the_title($thepost->ID); ?>"><?php echo get_the_time('F j, Y'); ?></a> <br/>
+					<?php echo $metacontent; ?>
+				</li>
+			<?php endif;
+		} ?>
+		</ul>
+		<span class="seeall"><a href="<?php bloginfo('url'); ?>/<?php echo $metakey; ?>">See All <?php echo ucfirst($metakey); ?></a></span>
+	<?php
+}
